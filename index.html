@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>文明跃迁 · 完美存档版</title>
+    <style>
+        /* --- 样式基本保持不变，只做微调 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; /* 防止长按选中文本 */
+        }
+
+        html, body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #000;
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(120, 50, 150, 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(50, 100, 200, 0.2) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, #050515 0%, #000 100%);
+            z-index: 0;
+        }
+
+        .galaxy-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse at 30% 70%, rgba(200, 100, 255, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 30%, rgba(100, 200, 255, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, #1a0a3e 0%, #000 100%);
+        }
+
+        .galaxy-bg.active { opacity: 1; }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 开始屏幕 - 修复点击问题 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #0a0a2e 0%, #000 70%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s;
+            overflow-y: auto;
+            padding: 60px 20px 20px;
+            -webkit-overflow-scrolling: touch;
+            pointer-events: auto; /* 确保可以点击 */
+        }
+        .start-screen.hidden { 
+            opacity: 0; 
+            pointer-events: none; /* 隐藏时不可点击 */
+        }
+        
+        .game-logo { 
+            width: 120px; 
+            height: 120px; 
+            margin-bottom: 15px;
+            pointer-events: none; /* logo不阻挡点击 */
+        }
+        
+        .game-title { 
+            font-size: 2em; 
+            background: linear-gradient(90deg, #00d4ff, #ff00ff, #00d4ff); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: shimmer 3s infinite; 
+            margin-bottom: 8px; 
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .game-subtitle { 
+            font-size: 0.9em; 
+            color: #888; 
+            margin-bottom: 20px; 
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        @keyframes shimmer { 
+            0%, 100% { filter: hue-rotate(0deg); } 
+            50% { filter: hue-rotate(30deg); } 
+        }
+        
+        .real-world-stats { 
+            background: rgba(0, 212, 255, 0.1); 
+            border: 1px solid rgba(0, 212, 255, 0.3); 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            width: 100%; 
+            max-width: 400px;
+            pointer-events: none; /* 统计信息不阻挡点击 */
+        }
+        
+        .real-world-stats h3 { 
+            color: #00d4ff; 
+            margin-bottom: 12px; 
+            font-size: 0.95em; 
+            text-align: center; 
+        }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+            font-size: 0.75em; 
+        }
+        
+        .stat-item { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 8px; 
+            border-radius: 6px; 
+            text-align: center; 
+        }
+        
+        .stat-value { 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            color: #ffd700; 
+        }
+        
+        .stat-label { 
+            font-size: 0.75em; 
+            color: #888; 
+            margin-top: 3px; 
+        }
+        
+        .start-btn { 
+            padding: 16px 40px; 
+            font-size: 1.1em; 
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf); 
+            border: none; 
+            border-radius: 30px; 
+            color: white; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            margin-bottom: 15px; 
+            min-width: 200px;
+            position: relative;
+            z-index: 2001; /* 确保按钮在最上层 */
+            pointer-events: auto; /* 确保按钮可以点击 */
+        }
+        
+        .start-btn:active { 
+            transform: scale(0.96); 
+        }
+
+        #gameContainer { 
+            display: none; 
+            width: 100%; 
+            height: 100vh; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        #gameContainer.active { 
+            display: block; 
+        }
+
+        .audio-control {
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            z-index: 1000; 
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5); 
+            border-radius: 50%; 
+            width: 44px; 
+            height: 44px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            font-size: 20px;
+        }
+        .audio-control.muted { 
+            background: rgba(255, 0, 0, 0.2); 
+            border-color: rgba(255, 0, 0, 0.5); 
+        }
+
+        .top-bar {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center; 
+            background: rgba(10, 10, 30, 0.95); 
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px 12px; 
+            z-index: 100; 
+            backdrop-filter: blur(10px); 
+            height: 60px;
+        }
+        .civ-info { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .civ-title { 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            background: linear-gradient(90deg, #00d4ff, #ff00ff); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        .civ-subtitle { 
+            font-size: 0.65em; 
+            color: #888; 
+        }
+        .resources { 
+            display: flex; 
+            gap: 8px; 
+        }
+        .resource { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 4px 8px; 
+            background: rgba(0, 0, 0, 0.5); 
+            border-radius: 8px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            min-width: 55px; 
+        }
+        .resource-icon { 
+            font-size: 0.9em; 
+        }
+        .resource-value { 
+            font-size: 0.75em; 
+            font-weight: bold; 
+            font-family: 'Courier New', monospace; 
+        }
+        .resource-rate { 
+            font-size: 0.55em; 
+            color: #0f0; 
+        }
+        .resource-rate.negative { 
+            color: #f00; 
+        }
+
+        .main-content { 
+            position: fixed; 
+            top: 60px; 
+            left: 0; 
+            right: 0; 
+            bottom: 140px; 
+            overflow: hidden; 
+        }
+
+        .planet-area {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            height: 45%;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 5;
+        }
+        .planet-container { 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .click-planet {
+            width: 140px; 
+            height: 140px; 
+            border-radius: 50%; 
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .click-planet:active { 
+            transform: scale(0.92); 
+        }
+        .click-planet.earth { 
+            background: radial-gradient(circle at 30% 30%, #4a90e2, #1a5490), 
+                        radial-gradient(circle at 70% 70%, #2d5016 20%, transparent 20%), 
+                        radial-gradient(circle at 40% 80%, #2d5016 15%, transparent 15%); 
+            box-shadow: 0 0 60px rgba(74, 144, 226, 0.5); 
+        }
+        .click-planet.fusion { 
+            background: radial-gradient(circle at 30% 30%, #00d4ff, #0066aa); 
+            box-shadow: 0 0 80px rgba(0, 212, 255, 0.6); 
+        }
+        .click-planet.dyson { 
+            background: radial-gradient(circle at 30% 30%, #ffd700, #ff8c00); 
+            box-shadow: 0 0 100px rgba(255, 215, 0, 0.6); 
+        }
+        .click-planet.antimatter { 
+            background: radial-gradient(circle at 30% 30%, #9932cc, #4b0082); 
+            box-shadow: 0 0 100px rgba(153, 50, 204, 0.6); 
+        }
+        .click-planet.cosmic { 
+            background: radial-gradient(circle at 30% 30%, #ffffff, #00d4ff, #7b2cbf); 
+            box-shadow: 0 0 120px rgba(255, 255, 255, 0.5); 
+            animation: cosmic-pulse 3s ease-in-out infinite; 
+        }
+        @keyframes cosmic-pulse { 
+            0%, 100% { transform: scale(1); } 
+            50% { transform: scale(1.05); } 
+        }
+
+        .dyson-ring { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            width: 200px; 
+            height: 200px; 
+            transform: translate(-50%, -50%); 
+            border: 2px solid rgba(255, 215, 0, 0.6); 
+            border-radius: 50%; 
+            opacity: 0; 
+            transition: opacity 1s; 
+            pointer-events: none; 
+        }
+        .dyson-ring.show { 
+            opacity: 1; 
+            animation: rotate 20s linear infinite; 
+        }
+        @keyframes rotate { 
+            from { transform: translate(-50%, -50%) rotate(0deg); } 
+            to { transform: translate(-50%, -50%) rotate(360deg); } 
+        }
+
+        .click-hint { 
+            margin-top: 15px; 
+            color: #888; 
+            font-size: 0.75em; 
+            text-align: center; 
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8); 
+        }
+
+        .panel-tabs { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            display: flex; 
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3); 
+            background: rgba(10, 10, 30, 0.9); 
+        }
+        .panel-tab { 
+            flex: 1; 
+            padding: 10px; 
+            text-align: center; 
+            font-size: 0.8em; 
+            cursor: pointer; 
+            border-bottom: 2px solid transparent; 
+            transition: all 0.2s; 
+        }
+        .panel-tab.active { 
+            border-bottom-color: #00d4ff; 
+            color: #00d4ff; 
+        }
+
+        .panel-content { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 40px; 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; 
+            padding: 10px; 
+            display: none; 
+        }
+        .panel-content.active { 
+            display: block; 
+        }
+
+        /* 建筑列表 */
+        .building-item {
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 12px; 
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.4); 
+            border-radius: 10px; 
+            cursor: pointer;
+            transition: all 0.2s; 
+            border: 1px solid transparent;
+            touch-action: manipulation;
+        }
+        .building-item:active { 
+            background: rgba(255, 149, 0, 0.2); 
+            border-color: rgba(255, 149, 0, 0.4); 
+        }
+        .building-item.disabled { 
+            opacity: 0.4; 
+            pointer-events: none; 
+        }
+        .building-item.building-longpress { 
+            background: rgba(255, 215, 0, 0.3); 
+            border-color: gold; 
+        }
+        .building-icon { 
+            font-size: 1.8em; 
+            width: 40px; 
+            text-align: center; 
+        }
+        .building-info { 
+            flex: 1; 
+        }
+        .building-name { 
+            font-weight: bold; 
+            font-size: 0.9em; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .building-count { 
+            background: rgba(255, 149, 0, 0.3); 
+            padding: 2px 8px; 
+            border-radius: 10px; 
+            font-size: 0.75em; 
+        }
+        .building-stats { 
+            font-size: 0.7em; 
+            color: #aaa; 
+            margin-top: 4px; 
+        }
+        .building-stats .positive { 
+            color: #0f0; 
+        }
+        .building-stats .negative { 
+            color: #f00; 
+        }
+        .building-cost { 
+            font-size: 0.7em; 
+            color: #ff9500; 
+            margin-top: 4px; 
+        }
+
+        .tech-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 12px; 
+            margin: 8px 0; 
+            background: rgba(0, 0, 0, 0.4); 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            border: 1px solid transparent; 
+        }
+        .tech-item:active { 
+            background: rgba(0, 212, 255, 0.2); 
+            border-color: rgba(0, 212, 255, 0.4); 
+        }
+        .tech-item.locked { 
+            opacity: 0.4; 
+        }
+        .tech-item.researched { 
+            border-color: #0f0; 
+            background: rgba(0, 255, 0, 0.1); 
+        }
+        .tech-icon { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.4em; 
+            background: linear-gradient(135deg, #1a1a3a, #0a0a1a); 
+            border: 2px solid rgba(0, 212, 255, 0.3); 
+            flex-shrink: 0; 
+        }
+        .tech-info { 
+            flex: 1; 
+        }
+        .tech-name { 
+            font-weight: bold; 
+            font-size: 0.9em; 
+        }
+        .tech-desc { 
+            font-size: 0.7em; 
+            color: #888; 
+            margin-top: 2px; 
+        }
+        .tech-cost { 
+            font-size: 0.7em; 
+            color: #7b2cbf; 
+            margin-top: 2px; 
+        }
+
+        .bottom-bar {
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            background: rgba(10, 10, 30, 0.95);
+            border-top: 1px solid rgba(0, 212, 255, 0.3); 
+            padding: 10px; 
+            z-index: 100; 
+            backdrop-filter: blur(10px);
+        }
+        .status-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            margin-bottom: 10px; 
+        }
+        .status-item { 
+            background: rgba(0, 0, 0, 0.5); 
+            padding: 6px; 
+            border-radius: 6px; 
+            text-align: center; 
+        }
+        .status-label { 
+            font-size: 0.6em; 
+            color: #888; 
+        }
+        .status-value { 
+            font-size: 0.75em; 
+            font-weight: bold; 
+            margin-top: 2px; 
+        }
+        .status-bar { 
+            width: 100%; 
+            height: 3px; 
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 2px; 
+            margin-top: 4px; 
+            overflow: hidden; 
+        }
+        .status-bar-fill { 
+            height: 100%; 
+            border-radius: 2px; 
+            transition: width 0.3s; 
+        }
+
+        .special-actions { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+        }
+        .special-btn, .ascension-btn { 
+            padding: 8px 16px; 
+            font-size: 0.75em; 
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf); 
+            border: none; 
+            border-radius: 15px; 
+            color: white; 
+            cursor: pointer; 
+            display: none; 
+        }
+        .special-btn.show, .ascension-btn.show { 
+            display: block; 
+        }
+        .ascension-btn { 
+            background: linear-gradient(90deg, #ff00ff, #7b2cbf); 
+            animation: pulse 2s infinite; 
+        }
+        @keyframes pulse { 
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); } 
+            50% { box-shadow: 0 0 25px rgba(255, 0, 255, 0.8); } 
+        }
+
+        .log-panel { 
+            position: fixed; 
+            top: 70px; 
+            left: 10px; 
+            right: 10px; 
+            max-height: 120px; 
+            overflow-y: auto; 
+            background: rgba(0, 0, 0, 0.85); 
+            border-radius: 8px; 
+            padding: 8px; 
+            z-index: 50; 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+            display: none; 
+        }
+        .log-panel.show { 
+            display: block; 
+        }
+        .log-entry { 
+            font-size: 0.7em; 
+            padding: 3px 6px; 
+            border-left: 2px solid #00d4ff; 
+            margin: 2px 0; 
+            padding-left: 6px; 
+            color: #ccc; 
+        }
+        .log-entry.warning { 
+            border-left-color: #ff9500; 
+            color: #ffcc00; 
+        }
+        .log-entry.danger { 
+            border-left-color: #ff006e; 
+            color: #ff6699; 
+        }
+        .log-entry.success { 
+            border-left-color: #00ff88; 
+            color: #88ffaa; 
+        }
+
+        .modal-overlay {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.9);
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 3000; 
+            padding: 20px;
+        }
+        .modal-overlay.show { 
+            display: flex; 
+        }
+        .modal-content { 
+            background: linear-gradient(135deg, rgba(20, 20, 40, 0.98), rgba(10, 10, 20, 0.98)); 
+            border: 1px solid rgba(0, 212, 255, 0.5); 
+            border-radius: 16px; 
+            padding: 20px; 
+            width: 100%; 
+            max-width: 400px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+        }
+        .modal-title { 
+            font-size: 1.1em; 
+            color: #00d4ff; 
+            margin-bottom: 12px; 
+            text-align: center; 
+        }
+        .modal-desc { 
+            font-size: 0.85em; 
+            line-height: 1.5; 
+            margin-bottom: 15px; 
+            color: #ddd; 
+        }
+        .modal-choice { 
+            padding: 12px; 
+            margin: 8px 0; 
+            background: rgba(0, 212, 255, 0.2); 
+            border: 1px solid rgba(0, 212, 255, 0.5); 
+            border-radius: 8px; 
+            color: white; 
+            cursor: pointer; 
+            font-size: 0.85em; 
+            text-align: center; 
+        }
+        .modal-choice:active { 
+            background: rgba(0, 212, 255, 0.4); 
+        }
+        .close-btn { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 12px; 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            border-radius: 8px; 
+            color: white; 
+            cursor: pointer; 
+            font-size: 0.9em; 
+        }
+
+        .toast {
+            position: fixed; 
+            top: 80px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(0, 212, 255, 0.5); 
+            border-radius: 20px; 
+            padding: 10px 20px; 
+            font-size: 0.85em;
+            z-index: 4000; 
+            opacity: 0; 
+            transition: opacity 0.3s; 
+            pointer-events: none;
+        }
+        .toast.show { 
+            opacity: 1; 
+        }
+
+        @media (min-width: 768px) {
+            .main-content { 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                grid-template-rows: 50% 50%; 
+            }
+            .planet-area { 
+                grid-column: 1 / -1; 
+                height: 100%; 
+            }
+            .click-planet { 
+                width: 180px; 
+                height: 180px; 
+            }
+            .panel-tabs { 
+                display: none; 
+            }
+            .panel-content { 
+                position: relative; 
+                display: block !important; 
+                bottom: 0; 
+            }
+        }
+        @media (max-height: 500px) and (orientation: landscape) {
+            .planet-area { 
+                height: 60%; 
+            }
+            .click-planet { 
+                width: 100px; 
+                height: 100px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="audio-control" id="audioControl">🔊</div>
+
+    <!-- 开始屏幕 - 确保按钮可以点击 -->
+    <div class="start-screen" id="startScreen">
+        <div class="space-bg"></div>
+        <div class="stars" id="starsContainer"></div>
+        <canvas class="game-logo" id="logoCanvas" width="120" height="120"></canvas>
+        <h1 class="game-title">文明跃迁</h1>
+        <p class="game-subtitle">从真实地球出发 · 星际探索</p>
+        <div class="real-world-stats">
+            <h3>🌍 2024年真实地球数据开局</h3>
+            <div class="stats-grid">
+                <div class="stat-item"><div class="stat-value">80亿</div><div class="stat-label">全球人口</div></div>
+                <div class="stat-item"><div class="stat-value">31300</div><div class="stat-label">发电量(TWh)</div></div>
+                <div class="stat-item"><div class="stat-value">60%</div><div class="stat-label">化石能源</div></div>
+                <div class="stat-item"><div class="stat-value">0.72</div><div class="stat-label">卡尔达肖夫指数</div></div>
+                <div class="stat-item"><div class="stat-value">40%</div><div class="stat-label">清洁能源</div></div>
+                <div class="stat-item"><div class="stat-value">V8</div><div class="stat-label">完美存档版</div></div>
+            </div>
+        </div>
+        <button class="start-btn" id="startButton">开始文明演化</button>
+        <p style="color: #666; font-size: 0.7em; text-align: center; margin-top: 10px;">适配手机 · 长按连续建造 · 自动存档</p>
+    </div>
+
+    <div id="gameContainer">
+        <div class="space-bg"></div>
+        <div class="galaxy-bg" id="galaxyBg"></div>
+        <div class="stars" id="gameStars"></div>
+
+        <!-- 顶部栏 -->
+        <div class="top-bar">
+            <div class="civ-info">
+                <div class="civ-title" id="civTitle">0.72级 - 地球文明</div>
+                <div class="civ-subtitle" id="civSubtitle">化石能源时代</div>
+            </div>
+            <div class="resources">
+                <div class="resource"><span class="resource-icon">⚡</span><span class="resource-value" id="energyVal">0</span><span class="resource-rate" id="energyRate">+0/s</span></div>
+                <div class="resource"><span class="resource-icon">🔬</span><span class="resource-value" id="researchVal">0</span></div>
+            </div>
+        </div>
+
+        <!-- 日志面板 -->
+        <div class="log-panel" id="logPanel"></div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="planet-area">
+                <div class="planet-container">
+                    <div class="click-planet earth" id="clickPlanet"></div>
+                    <div class="dyson-ring" id="dysonRing"></div>
+                </div>
+                <div class="click-hint" id="clickHint">点击星球收集能量</div>
+            </div>
+
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; top: 45%;">
+                <div class="panel-tabs">
+                    <div class="panel-tab active" id="tabBuildings">🏭 设施</div>
+                    <div class="panel-tab" id="tabTech">🔬 科技</div>
+                    <div class="panel-tab" id="tabLog">📜 日志</div>
+                </div>
+                <div class="panel-content active" id="buildingsPanel"><div id="buildingList"></div></div>
+                <div class="panel-content" id="techPanel"><div id="techTree"></div></div>
+            </div>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div class="bottom-bar">
+            <div class="status-grid">
+                <div class="status-item"><div class="status-label">👥 人口</div><div class="status-value" id="popVal">80亿</div><div class="status-bar"><div class="status-bar-fill" id="popBar" style="width: 80%; background: #00d4ff;"></div></div></div>
+                <div class="status-item"><div class="status-label">🌱 环境</div><div class="status-value" id="envVal">100%</div><div class="status-bar"><div class="status-bar-fill" id="envBar" style="width: 85%; background: #00ff88;"></div></div></div>
+                <div class="status-item"><div class="status-label">⚖️ 稳定</div><div class="status-value" id="stabilityVal">稳定</div><div class="status-bar"><div class="status-bar-fill" id="stabilityBar" style="width: 90%; background: #00d4ff;"></div></div></div>
+                <div class="status-item"><div class="status-label">⚡ 能源结构</div><div class="status-value" id="energyStruct">化石60%</div><div class="status-bar"><div class="status-bar-fill" id="energyBar" style="width: 60%; background: #ff9500;"></div></div></div>
+            </div>
+            <div class="special-actions">
+                <button class="special-btn" id="spaceshipBtn">🚀 星际航行</button>
+                <button class="special-btn" id="siliconBtn">🤖 硅基转化</button>
+                <button class="special-btn" id="dimensionBtn">🌀 维度跃迁</button>
+                <button class="ascension-btn" id="ascensionBtn">🚀 文明跃迁</button>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+        <div class="modal-overlay" id="eventModal">
+            <div class="modal-content">
+                <div class="modal-title" id="eventTitle"></div>
+                <div class="modal-desc" id="eventDesc"></div>
+                <div id="eventChoices"></div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="spaceshipModal">
+            <div class="modal-content">
+                <div class="modal-title">🚀 星际航行中心</div>
+                <div id="spaceshipList"></div>
+                <button class="close-btn" id="closeSpaceshipBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据定义
+        const CIVILIZATION_DATA = [
+            { level: 0.72, name: "地球文明", type: "化石能源时代", planetClass: "earth", desc: "基于真实2024年数据开局", next: 5000 },
+            { level: 1, name: "行星文明", type: "可控核聚变时代", planetClass: "fusion", desc: "掌握可控核聚变", next: 25000 },
+            { level: 2, name: "恒星文明", type: "戴森球时代", planetClass: "dyson", desc: "建造戴森球", next: 100000 },
+            { level: 3, name: "星系文明", type: "反重力时代", planetClass: "antimatter", desc: "反重力技术", next: 500000 },
+            { level: 4, name: "宇宙文明", type: "超新星采集", planetClass: "cosmic", desc: "采集超新星能量", next: 2000000 },
+            { level: 5, name: "平行宇宙", type: "白洞能源", planetClass: "cosmic", desc: "穿梭平行宇宙", next: 10000000 },
+            { level: 6, name: "多维宇宙", type: "维度能量", planetClass: "cosmic", desc: "高维存在", next: 50000000 },
+            { level: 7, name: "创世神级", type: "全能", planetClass: "cosmic", desc: "创造一切", next: Infinity }
+        ];
+
+        const BUILDINGS = [
+            { id: 'coal_mine', name: '煤矿', icon: '⛏️', level: 0, output: { energy: 5 }, maintenance: { energy: 0.5 }, pollution: 3, desc: '化石能源主力，高污染' },
+            { id: 'oil_well', name: '油井', icon: '🛢️', level: 0, output: { energy: 8 }, maintenance: { energy: 1 }, pollution: 2.5, desc: '石油消费主力' },
+            { id: 'gas_plant', name: '天然气电厂', icon: '🔥', level: 0, output: { energy: 10 }, maintenance: { energy: 1.5 }, pollution: 1.5, desc: '较清洁化石能源' },
+            { id: 'hydro_dam', name: '水电站', icon: '💧', level: 0, output: { energy: 12 }, maintenance: { energy: 0.5 }, pollution: 0, desc: '最大可再生来源' },
+            { id: 'solar_farm', name: '太阳能农场', icon: '☀️', level: 0, output: { energy: 6 }, maintenance: { energy: 0.2 }, pollution: 0, desc: '快速增长中' },
+            { id: 'wind_farm', name: '风电场', icon: '💨', level: 0, output: { energy: 8 }, maintenance: { energy: 0.3 }, pollution: 0, desc: '海上风电潜力大' },
+            { id: 'nuclear_plant', name: '核电站', icon: '☢️', level: 0.3, output: { energy: 25 }, maintenance: { energy: 3 }, pollution: 0.2, desc: '高产出低排放' },
+            { id: 'fusion_experimental', name: '实验聚变堆', icon: '⚛️', level: 0.9, output: { energy: 20 }, maintenance: { energy: 25 }, pollution: 0, special: 'fusion_loss', desc: 'Q值<1，初期亏损' },
+            { id: 'ai_center', name: 'AI计算中心', icon: '🤖', level: 0.95, output: { research: 10 }, maintenance: { energy: 30 }, pollution: 0.5, desc: '能源黑洞但产科研' },
+            { id: 'fusion_commercial', name: '商用聚变电站', icon: '🔆', level: 1.2, output: { energy: 100 }, maintenance: { energy: 15 }, pollution: 0, desc: 'Q值>10，能源自由' },
+            { id: 'dyson_swarm', name: '戴森云组件', icon: '🌐', level: 2, output: { energy: 500 }, maintenance: { energy: 20 }, pollution: 0, desc: '捕获恒星能量' },
+            { id: 'antimatter_plant', name: '反物质工厂', icon: '💥', level: 2.5, output: { energy: 2000 }, maintenance: { energy: 500 }, pollution: 0, desc: '终极能源E=mc²' }
+        ];
+
+        const TECHNOLOGIES = [
+            { id: 'agriculture', name: '现代农业', icon: '🌾', cost: 0, level: 0, desc: '已解锁：养活80亿人口' },
+            { id: 'industry', name: '工业革命', icon: '🏭', cost: 0, level: 0, desc: '已解锁：化石能源利用' },
+            { id: 'electricity', name: '电力系统', icon: '⚡', cost: 0, level: 0, desc: '已解锁：全球电气化' },
+            { id: 'nuclear_fission', name: '核裂变', icon: '☢️', cost: 0, level: 0.1, desc: '已解锁：核电站技术' },
+            { id: 'renewable', name: '风光技术', icon: '🌱', cost: 0, level: 0.1, desc: '已解锁：可再生能源' },
+            { id: 'fusion_research', name: '聚变研究', icon: '🔬', cost: 500, level: 0.8, desc: '解锁实验聚变堆' },
+            { id: 'fusion_breakthrough', name: '聚变突破', icon: '💡', cost: 2000, level: 0.95, effect: 'fusion_fix', desc: 'Q值突破，聚变转正' },
+            { id: 'ai_revolution', name: 'AI革命', icon: '🧠', cost: 3000, level: 0.9, desc: '解锁AI计算中心' },
+            { id: 'superconductor', name: '室温超导', icon: '❄️', cost: 8000, level: 1.1, desc: '能量传输效率翻倍' },
+            { id: 'dyson_tech', name: '戴森球技术', icon: '🌐', cost: 30000, level: 1.8, desc: '建造恒星采集器' },
+            { id: 'antimatter_tech', name: '反物质技术', icon: '💥', cost: 100000, level: 2.3, desc: '终极能源形式' }
+        ];
+
+        const SPACESHIPS = [
+            { id: 'chemical', name: '化学火箭', icon: '🚀', level: 0.8, cost: 500, range: '月球', desc: '类似SpaceX星舰' },
+            { id: 'ion', name: '离子推进器', icon: '🛸', level: 1.1, cost: 2000, range: '火星', desc: '低推力高比冲' },
+            { id: 'nuclear_thermal', name: '核热火箭', icon: '☢️', level: 1.3, cost: 8000, range: '外太阳系', desc: '载人深空探测' },
+            { id: 'fusion_ramjet', name: '聚变冲压', icon: '🌟', level: 1.8, cost: 30000, range: '奥尔特云', desc: 'Bussard冲压发动机' },
+            { id: 'lightsail', name: '光帆飞船', icon: '⛵', level: 2.2, cost: 100000, range: '比邻星', desc: '10%光速探索' },
+            { id: 'antimatter', name: '反物质飞船', icon: '💫', level: 3, cost: 500000, range: '银河系', desc: '50%光速' },
+            { id: 'warp', name: '曲速探测器', icon: '🔮', level: 4, cost: 2000000, range: '宇宙', desc: '超光速旅行' }
+        ];
+
+        const EVENTS = [
+            { id: 'ai_rebel', title: '🤖 AI反叛危机！', desc: 'AI能耗超过总产出80%，它们正在切断与人类的联系！', 
+              condition: (g) => g.buildings.ai_center > 0 && g.consumption.ai > g.production.total * 0.8,
+              choices: [
+                  { text: '紧急切断电源（损失50%建筑）', effect: (g) => { g.destroyBuildings(0.5); g.buildings.ai_center = 0; g.showToast('强行切断AI电源', 'danger'); } },
+                  { text: '谈判安抚（支付20000能量）', effect: (g) => { g.resources.energy -= 20000; g.aiLoyalty = 100; g.showToast('AI暂时稳定', 'warning'); } }
+              ]},
+            { id: 'nuclear_leak', title: '☢️ 核泄漏事故！', desc: '核电站冷却系统故障，辐射正在扩散！',
+              condition: (g) => g.buildings.nuclear_plant > 3 && Math.random() < 0.005,
+              choices: [
+                  { text: '紧急疏散（损失核电站，环境-20%）', effect: (g) => { g.buildings.nuclear_plant = Math.max(0, g.buildings.nuclear_plant - 2); g.environment -= 20; g.showToast('核泄漏！核电站被封存', 'danger'); } },
+                  { text: '机器人修复（需AI中心）', effect: (g) => { if(g.buildings.ai_center > 0) { g.showToast('AI机器人修复成功', 'success'); } else { g.buildings.nuclear_plant--; g.environment -= 10; } } }
+              ]},
+            { id: 'climate_collapse', title: '🌪️ 气候崩溃警告！', desc: '化石能源过度使用，极端天气摧毁农业区！',
+              condition: (g) => g.environment < 50 && g.pollution > 60,
+              choices: [
+                  { text: '紧急碳中和（关闭化石设施）', effect: (g) => { g.disableFossil(); g.environment += 30; g.showToast('全球紧急减排', 'warning'); } },
+                  { text: '气候工程（消耗10000科研点）', effect: (g) => { if(g.resources.research > 10000) { g.resources.research -= 10000; g.environment += 40; g.showToast('气候工程启动', 'success'); } else { g.environment -= 20; g.showToast('科研点不足，气候恶化', 'danger'); } } }
+              ]}
+        ];
+
+        class Game {
+            constructor() {
+                // 初始化默认值
+                this.resources = { energy: 1000, research: 500 };
+                this.buildings = {};
+                this.technologies = new Set(['agriculture', 'industry', 'electricity', 'nuclear_fission', 'renewable']);
+                this.civIndex = 0;
+                this.population = { current: 8000000000, max: 10000000000, growth: 1.0001 };
+                this.environment = 85;
+                this.pollution = 0;
+                this.stability = 90;
+                this.aiLoyalty = 100;
+                this.production = { total: 0 };
+                this.consumption = { total: 0, ai: 0 };
+                this.clickPower = 10;
+                this.multipliers = { energy: 1, research: 1 };
+                this.isSilicon = false;
+                this.fusionFixed = false;
+                this.currentTab = 'buildings';
+                this.audio = { isMuted: false };
+
+                // 长按相关变量
+                this.longPressTimer = null;
+                this.currentLongPressBuildingId = null;
+                
+                BUILDINGS.forEach(b => this.buildings[b.id] = 0);
+                // 开局默认建筑
+                this.buildings.coal_mine = 35;
+                this.buildings.oil_well = 20;
+                this.buildings.gas_plant = 20;
+                this.buildings.nuclear_plant = 9;
+                this.buildings.hydro_dam = 15;
+                this.buildings.solar_farm = 7;
+                this.buildings.wind_farm = 8;
+
+                // 尝试加载存档
+                this.load();
+
+                this.drawLogo();
+                this.createStars('starsContainer', 50);
+                this.createStars('gameStars', 80);
+                
+                // 绑定事件
+                this.bindEvents();
+                
+                // 游戏循环变量
+                this.lastUpdate = performance.now();
+                this.gameLoop = this.gameLoop.bind(this);
+                requestAnimationFrame(this.gameLoop);
+            }
+
+            bindEvents() {
+                // 开始按钮事件
+                const startBtn = document.getElementById('startButton');
+                if (startBtn) {
+                    startBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.start();
+                    });
+                }
+
+                // 音频控制
+                const audioCtrl = document.getElementById('audioControl');
+                if (audioCtrl) {
+                    audioCtrl.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.toggleAudio();
+                    });
+                }
+
+                // 标签页切换
+                document.getElementById('tabBuildings').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.switchTab('buildings');
+                });
+                
+                document.getElementById('tabTech').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.switchTab('tech');
+                });
+                
+                document.getElementById('tabLog').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.switchTab('log');
+                });
+
+                // 特殊按钮
+                document.getElementById('spaceshipBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showSpaceshipPanel();
+                });
+                
+                document.getElementById('siliconBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.transformToSilicon();
+                });
+                
+                document.getElementById('dimensionBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.ascendDimension();
+                });
+                
+                document.getElementById('ascensionBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.ascend();
+                });
+
+                // 关闭飞船面板
+                document.getElementById('closeSpaceshipBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeSpaceshipPanel();
+                });
+
+                // 星球点击
+                this.setupTouchEvents();
+            }
+
+            drawLogo() {
+                const canvas = document.getElementById('logoCanvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const gradient = ctx.createRadialGradient(60, 60, 0, 60, 60, 60);
+                gradient.addColorStop(0, '#1a1a3a');
+                gradient.addColorStop(1, '#0a0a1a');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(60, 60, 60, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(60, 60, 50, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.font = '40px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🌍', 60, 55);
+                ctx.font = 'bold 12px Arial';
+                ctx.fillStyle = '#00d4ff';
+                ctx.fillText('文明跃迁', 60, 95);
+            }
+
+            createStars(containerId, count) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = size + 'px';
+                    star.style.height = size + 'px';
+                    star.style.animationDelay = Math.random() * 3 + 's';
+                    container.appendChild(star);
+                }
+            }
+
+            setupTouchEvents() {
+                const planet = document.getElementById('clickPlanet');
+                if (!planet) return;
+
+                planet.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    planet.style.transform = 'scale(0.92)';
+                }, { passive: false });
+
+                planet.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    planet.style.transform = 'scale(1)';
+                    this.clickPlanet();
+                }, { passive: false });
+
+                planet.addEventListener('touchcancel', (e) => {
+                    e.preventDefault();
+                    planet.style.transform = 'scale(1)';
+                });
+
+                planet.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    planet.style.transform = 'scale(0.92)';
+                });
+                
+                planet.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    planet.style.transform = 'scale(1)';
+                    this.clickPlanet();
+                });
+                
+                planet.addEventListener('mouseleave', () => {
+                    planet.style.transform = 'scale(1)';
+                });
+            }
+
+            // ---------- 存档/读档 ----------
+            save() {
+                const saveData = {
+                    resources: this.resources,
+                    buildings: this.buildings,
+                    technologies: Array.from(this.technologies),
+                    civIndex: this.civIndex,
+                    population: this.population,
+                    environment: this.environment,
+                    pollution: this.pollution,
+                    stability: this.stability,
+                    aiLoyalty: this.aiLoyalty,
+                    multipliers: this.multipliers,
+                    isSilicon: this.isSilicon,
+                    fusionFixed: this.fusionFixed,
+                    clickPower: this.clickPower
+                };
+                localStorage.setItem('civilizationAscensionSave', JSON.stringify(saveData));
+                console.log('游戏已自动保存');
+            }
+
+            load() {
+                const saved = localStorage.getItem('civilizationAscensionSave');
+                if (!saved) return;
+                
+                try {
+                    const data = JSON.parse(saved);
+                    this.resources = data.resources || this.resources;
+                    this.buildings = data.buildings || this.buildings;
+                    this.technologies = new Set(data.technologies || this.technologies);
+                    this.civIndex = data.civIndex || 0;
+                    this.population = data.population || this.population;
+                    this.environment = data.environment ?? 85;
+                    this.pollution = data.pollution || 0;
+                    this.stability = data.stability ?? 90;
+                    this.aiLoyalty = data.aiLoyalty ?? 100;
+                    this.multipliers = data.multipliers || { energy: 1, research: 1 };
+                    this.isSilicon = data.isSilicon || false;
+                    this.fusionFixed = data.fusionFixed || false;
+                    this.clickPower = data.clickPower || 10;
+                    
+                    this.showToast('存档加载成功', 'success');
+                } catch (e) {
+                    console.error('加载存档失败', e);
+                }
+            }
+
+            // ---------- 长按连续购买逻辑 ----------
+            startLongPress(buildingId) {
+                if (this.longPressTimer) return;
+                this.currentLongPressBuildingId = buildingId;
+                
+                const buildingElement = document.querySelector(`.building-item[data-building-id="${buildingId}"]`);
+                if (buildingElement) buildingElement.classList.add('building-longpress');
+
+                this.longPressTimer = setInterval(() => {
+                    this.buyBuilding(buildingId, true);
+                }, 200);
+            }
+
+            stopLongPress() {
+                if (this.longPressTimer) {
+                    clearInterval(this.longPressTimer);
+                    this.longPressTimer = null;
+                    
+                    if (this.currentLongPressBuildingId) {
+                        const buildingElement = document.querySelector(`.building-item[data-building-id="${this.currentLongPressBuildingId}"]`);
+                        if (buildingElement) buildingElement.classList.remove('building-longpress');
+                        this.currentLongPressBuildingId = null;
+                    }
+                }
+            }
+
+            // ---------- 游戏循环 ----------
+            gameLoop(now) {
+                const deltaTime = Math.min(100, now - this.lastUpdate) / 1000;
+                this.lastUpdate = now;
+
+                const netProduction = this.calculateProduction();
+                this.resources.energy += netProduction * deltaTime;
+                this.resources.research += (this.buildings.ai_center || 0) * 1 * deltaTime;
+
+                if (this.resources.energy < 0) this.resources.energy = 0;
+                if (this.resources.research < 0) this.resources.research = 0;
+
+                if (this.population.current < this.population.max) {
+                    this.population.current *= Math.pow(this.population.growth, deltaTime);
+                }
+
+                if (this.population.current > this.population.max * 1.2) {
+                    this.stability -= 0.5 * deltaTime;
+                } else if (this.environment < 40) {
+                    this.stability -= 0.3 * deltaTime;
+                } else {
+                    this.stability = Math.min(100, this.stability + 0.2 * deltaTime);
+                }
+                this.stability = Math.max(0, Math.min(100, this.stability));
+
+                this.environment = Math.max(0, Math.min(100, this.environment - this.pollution * deltaTime * 0.1));
+
+                const civ = CIVILIZATION_DATA[this.civIndex];
+                if (this.resources.energy >= civ.next && this.civIndex < CIVILIZATION_DATA.length - 1) {
+                    document.getElementById('ascensionBtn')?.classList.add('show');
+                } else {
+                    document.getElementById('ascensionBtn')?.classList.remove('show');
+                }
+                
+                document.getElementById('spaceshipBtn')?.classList.toggle('show', this.civIndex >= 0.8);
+                document.getElementById('siliconBtn')?.classList.toggle('show', this.civIndex >= 3 && !this.isSilicon);
+                document.getElementById('dimensionBtn')?.classList.toggle('show', this.civIndex >= 5);
+
+                if (Math.random() < 0.001 * deltaTime * 10) {
+                    this.checkRandomEvents();
+                }
+
+                if (Math.floor(now / 1000) % 30 === 0 && Math.floor(this.lastUpdate / 1000) !== Math.floor(now / 1000)) {
+                    this.save();
+                }
+
+                this.updateUI();
+                requestAnimationFrame(this.gameLoop);
+            }
+
+            start() {
+                document.getElementById('startScreen').classList.add('hidden');
+                document.getElementById('gameContainer').classList.add('active');
+                this.showToast('游戏开始！长按建筑可连续建造');
+                this.updateUI();
+            }
+
+            toggleAudio() {
+                this.audio.isMuted = !this.audio.isMuted;
+                const btn = document.getElementById('audioControl');
+                btn.textContent = this.audio.isMuted ? '🔇' : '🔊';
+                btn.classList.toggle('muted', this.audio.isMuted);
+            }
+
+            clickPlanet() {
+                this.resources.energy += this.clickPower;
+                this.showToast(`+${this.clickPower} 能量`);
+                this.updateUI();
+            }
+
+            showToast(message, type = 'normal') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 1500);
+            }
+
+            switchTab(tab) {
+                this.currentTab = tab;
+                document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+                
+                if (tab === 'buildings') {
+                    document.getElementById('tabBuildings').classList.add('active');
+                    document.getElementById('buildingsPanel').classList.add('active');
+                } else if (tab === 'tech') {
+                    document.getElementById('tabTech').classList.add('active');
+                    document.getElementById('techPanel').classList.add('active');
+                } else if (tab === 'log') {
+                    document.getElementById('tabLog').classList.add('active');
+                    document.getElementById('logPanel').classList.toggle('show');
+                }
+                
+                this.updateUI();
+            }
+
+            buyBuilding(id, fromLongPress = false) {
+                const b = BUILDINGS.find(x => x.id === id);
+                if (!b || this.civIndex < b.level) return false;
+                
+                const cost = Math.pow(1.5, this.buildings[id]) * 100 * (b.level + 1);
+                if (this.resources.energy < cost) {
+                    if (!fromLongPress) this.showToast('能量不足！', 'warning');
+                    return false;
+                }
+                
+                this.resources.energy -= cost;
+                this.buildings[id]++;
+                if (!fromLongPress) this.showToast(`建造了 ${b.name}`);
+                this.updateUI();
+                return true;
+            }
+
+            researchTech(id) {
+                const t = TECHNOLOGIES.find(x => x.id === id);
+                if (!t || this.technologies.has(id) || this.resources.research < t.cost) {
+                    if (this.resources.research < t.cost) {
+                        this.showToast('科研点不足！', 'warning');
+                    }
+                    return;
+                }
+                
+                this.resources.research -= t.cost;
+                this.technologies.add(id);
+                
+                if (t.effect === 'fusion_fix') {
+                    this.fusionFixed = true;
+                    this.showToast('聚变突破！开始正收益', 'success');
+                }
+                
+                this.showToast(`研究完成: ${t.name}`, 'success');
+                this.updateUI();
+            }
+
+            calculateProduction() {
+                let totalProduction = 0;
+                let totalConsumption = 0;
+                let pollution = 0;
+                
+                BUILDINGS.forEach(b => {
+                    const count = this.buildings[b.id];
+                    if (count > 0) {
+                        let output = (b.output.energy || 0) * count * this.multipliers.energy;
+                        
+                        if (b.special === 'fusion_loss' && !this.fusionFixed) {
+                            output = -output * 0.5;
+                        }
+                        
+                        totalProduction += Math.max(0, output);
+                        totalConsumption += Math.max(0, -output);
+                        
+                        if (b.maintenance.energy) {
+                            totalConsumption += b.maintenance.energy * count;
+                        }
+                        
+                        if (b.pollution) {
+                            pollution += b.pollution * count * 0.001;
+                        }
+                    }
+                });
+                
+                this.production.total = totalProduction;
+                this.consumption.total = totalConsumption;
+                this.pollution = Math.max(0, this.pollution + pollution * 0.1);
+                
+                const aiConsumption = (this.buildings.ai_center || 0) * 30;
+                this.consumption.ai = aiConsumption;
+                
+                return totalProduction - totalConsumption;
+            }
+
+            checkRandomEvents() {
+                EVENTS.forEach(event => {
+                    if (event.condition(this) && Math.random() < 0.3) {
+                        this.triggerEvent(event.id);
+                    }
+                });
+            }
+
+            triggerEvent(eventId) {
+                const event = EVENTS.find(e => e.id === eventId);
+                if (!event) return;
+                
+                document.getElementById('eventTitle').textContent = event.title;
+                document.getElementById('eventDesc').textContent = event.desc;
+                
+                const choicesDiv = document.getElementById('eventChoices');
+                choicesDiv.innerHTML = '';
+                
+                event.choices.forEach(choice => {
+                    const btn = document.createElement('div');
+                    btn.className = 'modal-choice';
+                    btn.textContent = choice.text;
+                    btn.onclick = () => {
+                        choice.effect(this);
+                        document.getElementById('eventModal').classList.remove('show');
+                    };
+                    choicesDiv.appendChild(btn);
+                });
+                
+                document.getElementById('eventModal').classList.add('show');
+            }
+
+            ascend() {
+                if (this.civIndex < CIVILIZATION_DATA.length - 1) {
+                    this.civIndex++;
+                    const civ = CIVILIZATION_DATA[this.civIndex];
+                    this.showToast(`文明跃迁至 ${civ.name}！`, 'success');
+                    
+                    const planet = document.getElementById('clickPlanet');
+                    planet.className = 'click-planet ' + civ.planetClass;
+                    
+                    if (civ.planetClass === 'dyson') {
+                        document.getElementById('dysonRing').classList.add('show');
+                    } else if (civ.planetClass !== 'earth') {
+                        document.getElementById('dysonRing').classList.remove('show');
+                    }
+                    
+                    if (this.civIndex >= 3) {
+                        document.getElementById('galaxyBg').classList.add('active');
+                    }
+                    
+                    document.getElementById('civTitle').textContent = civ.level + '级 - ' + civ.name;
+                    document.getElementById('civSubtitle').textContent = civ.type;
+                    
+                    const hints = ['点击星球收集能量', '聚变时代：能量产出大幅提升', '戴森球环绕中', '反物质驱动', '宇宙能量尽在掌握', '平行宇宙探索中', '高维存在', '创造一切'];
+                    document.getElementById('clickHint').textContent = hints[this.civIndex] || '点击能量源';
+                }
+            }
+
+            showSpaceshipPanel() {
+                const list = document.getElementById('spaceshipList');
+                list.innerHTML = '';
+                
+                SPACESHIPS.forEach(ship => {
+                    if (this.civIndex < ship.level) return;
+                    
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display: flex; gap: 12px; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.5); border-radius: 10px;';
+                    item.innerHTML = `
+                        <div style="font-size: 1.8em;">${ship.icon}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 0.9em;">${ship.name}</div>
+                            <div style="font-size: 0.7em; color: #888;">航程: ${ship.range}</div>
+                            <div style="font-size: 0.65em; color: #aaa; margin-top: 3px;">${ship.desc}</div>
+                            <div style="color: #ff9500; font-size: 0.75em; margin-top: 4px;">消耗: ${this.formatNumber(ship.cost)} 能量</div>
+                        </div>
+                    `;
+                    
+                    if (this.resources.energy >= ship.cost) {
+                        item.style.cursor = 'pointer';
+                        item.onclick = () => {
+                            this.resources.energy -= ship.cost;
+                            this.showToast(`${ship.name} 发射成功！`, 'success');
+                            setTimeout(() => this.explore(ship), 2000);
+                            this.closeSpaceshipPanel();
+                        };
+                    } else {
+                        item.style.opacity = '0.5';
+                    }
+                    
+                    list.appendChild(item);
+                });
+                
+                document.getElementById('spaceshipModal').classList.add('show');
+            }
+
+            explore(ship) {
+                const discoveries = [
+                    { name: '气态巨星', desc: '氦-3丰富，能量产出+20%', effect: () => { this.multipliers.energy *= 1.2; } },
+                    { name: '宜居行星', desc: '人口承载力翻倍', effect: () => { this.population.max *= 2; } },
+                    { name: '先驱者遗迹', desc: '+5000科研点', effect: () => { this.resources.research += 5000; } },
+                    { name: '外星贸易站', desc: '每秒能量+50%', effect: () => { this.multipliers.energy *= 1.5; } }
+                ];
+                
+                const d = discoveries[Math.floor(Math.random() * discoveries.length)];
+                d.effect();
+                this.showToast(`发现：${d.name}！${d.desc}`, 'success');
+            }
+
+            closeSpaceshipPanel() {
+                document.getElementById('spaceshipModal').classList.remove('show');
+            }
+
+            transformToSilicon() {
+                if (this.resources.energy < 100000) {
+                    this.showToast('需要10万能量进行硅基转化', 'warning');
+                    return;
+                }
+                this.resources.energy -= 100000;
+                this.isSilicon = true;
+                this.population.max *= 100;
+                this.multipliers.research *= 5;
+                this.showToast('进化为硅基生命！', 'success');
+                document.getElementById('siliconBtn').classList.remove('show');
+            }
+
+            ascendDimension() {
+                if (this.resources.energy < 1000000) {
+                    this.showToast('需要100万能量跃迁维度', 'warning');
+                    return;
+                }
+                this.resources.energy -= 1000000;
+                this.showToast('跃迁至更高维度！', 'success');
+            }
+
+            destroyBuildings(ratio) {
+                BUILDINGS.forEach(b => {
+                    this.buildings[b.id] = Math.floor(this.buildings[b.id] * (1 - ratio));
+                });
+            }
+
+            disableFossil() {
+                this.buildings.coal_mine = 0;
+                this.buildings.oil_well = 0;
+                this.buildings.gas_plant = 0;
+            }
+
+            formatNumber(num) {
+                if (num >= 1e15) return (num / 1e15).toFixed(1) + 'P';
+                if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
+                if (num >= 1e9) return (num / 1e9).toFixed(1) + 'G';
+                if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+                if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
+                return Math.floor(num).toString();
+            }
+
+            updateUI() {
+                document.getElementById('energyVal').textContent = this.formatNumber(this.resources.energy);
+                document.getElementById('researchVal').textContent = this.formatNumber(this.resources.research);
+                document.getElementById('popVal').textContent = this.formatNumber(this.population.current);
+                document.getElementById('envVal').textContent = Math.floor(this.environment) + '%';
+                
+                const net = this.production.total - this.consumption.total;
+                const rateEl = document.getElementById('energyRate');
+                rateEl.textContent = (net >= 0 ? '+' : '') + this.formatNumber(net * 10) + '/s';
+                rateEl.className = 'resource-rate ' + (net < 0 ? 'negative' : '');
+                
+                // 建筑列表
+                const buildingList = document.getElementById('buildingList');
+                if (this.currentTab === 'buildings') {
+                    buildingList.innerHTML = '';
+                    const availableBuildings = BUILDINGS
+                        .filter(b => b.level <= this.civIndex + 0.5)
+                        .sort((a, b) => a.level - b.level);
+                    
+                    availableBuildings.forEach(b => {
+                        const count = this.buildings[b.id];
+                        const cost = Math.pow(1.5, count) * 100 * (b.level + 1);
+                        
+                        let netOutput = (b.output.energy || 0);
+                        if (b.special === 'fusion_loss' && !this.fusionFixed) netOutput = -netOutput * 0.5;
+                        if (b.maintenance.energy) netOutput -= b.maintenance.energy;
+                        
+                        const item = document.createElement('div');
+                        item.className = 'building-item ' + (this.resources.energy < cost ? 'disabled' : '');
+                        item.setAttribute('data-building-id', b.id);
+                        item.innerHTML = `
+                            <div class="building-icon">${b.icon}</div>
+                            <div class="building-info">
+                                <div class="building-name">${b.name} ${count > 0 ? `<span class="building-count">×${count}</span>` : ''}</div>
+                                <div class="building-stats">
+                                    <span class="${netOutput >= 0 ? 'positive' : 'negative'}">净产出: ${netOutput > 0 ? '+' : ''}${netOutput.toFixed(1)}⚡/s</span>
+                                    ${b.output.research ? ` | <span class="positive">+${b.output.research}🔬</span>` : ''}
+                                </div>
+                                <div class="building-cost">💰 ${this.formatNumber(cost)} 能量</div>
+                            </div>
+                        `;
+                        
+                        // 单击事件
+                        item.onclick = (e) => {
+                            e.stopPropagation();
+                            this.buyBuilding(b.id);
+                        };
+
+                        // 长按事件
+                        let pressTimer = null;
+                        item.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            pressTimer = setTimeout(() => {
+                                this.startLongPress(b.id);
+                            }, 500);
+                        }, { passive: false });
+
+                        item.addEventListener('touchend', (e) => {
+                            e.preventDefault();
+                            clearTimeout(pressTimer);
+                            this.stopLongPress();
+                        });
+
+                        item.addEventListener('touchcancel', (e) => {
+                            e.preventDefault();
+                            clearTimeout(pressTimer);
+                            this.stopLongPress();
+                        });
+
+                        item.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            pressTimer = setTimeout(() => {
+                                this.startLongPress(b.id);
+                            }, 500);
+                        });
+
+                        item.addEventListener('mouseup', (e) => {
+                            e.preventDefault();
+                            clearTimeout(pressTimer);
+                            this.stopLongPress();
+                        });
+
+                        item.addEventListener('mouseleave', (e) => {
+                            clearTimeout(pressTimer);
+                            this.stopLongPress();
+                        });
+
+                        buildingList.appendChild(item);
+                    });
+                }
+                
+                // 科技列表
+                const techTree = document.getElementById('techTree');
+                if (this.currentTab === 'tech') {
+                    techTree.innerHTML = '';
+                    const availableTechs = TECHNOLOGIES
+                        .filter(t => t.level <= this.civIndex + 0.5)
+                        .sort((a, b) => a.level - b.level);
+                    
+                    availableTechs.forEach(t => {
+                        const researched = this.technologies.has(t.id);
+                        
+                        const item = document.createElement('div');
+                        item.className = 'tech-item ' + (researched ? 'researched' : this.resources.research < t.cost ? 'locked' : '');
+                        item.innerHTML = `
+                            <div class="tech-icon">${t.icon}</div>
+                            <div class="tech-info">
+                                <div class="tech-name">${t.name}</div>
+                                <div class="tech-desc">${t.desc}</div>
+                                ${!researched ? `<div class="tech-cost">🔬 ${this.formatNumber(t.cost)}</div>` : '<div style="color: #0f0; font-size: 0.7em;">✓ 已研究</div>'}
+                            </div>
+                        `;
+                        if (!researched) item.onclick = () => this.researchTech(t.id);
+                        techTree.appendChild(item);
+                    });
+                }
+                
+                // 状态条
+                const totalBuildings = Object.values(this.buildings).reduce((a, b) => a + b, 0);
+                const fossilCount = this.buildings.coal_mine + this.buildings.oil_well + this.buildings.gas_plant;
+                const fossilPercent = totalBuildings > 0 ? Math.round(fossilCount / totalBuildings * 100) : 60;
+                
+                document.getElementById('energyStruct').textContent = fossilPercent > 50 ? `化石${fossilPercent}%` : '清洁' + (100-fossilPercent) + '%';
+                document.getElementById('energyBar').style.width = fossilPercent + '%';
+                document.getElementById('energyBar').style.background = fossilPercent > 60 ? '#ff9500' : '#00ff88';
+                
+                document.getElementById('envBar').style.width = this.environment + '%';
+                document.getElementById('envBar').style.background = this.environment < 50 ? '#ff006e' : this.environment < 70 ? '#ff9500' : '#00ff88';
+                
+                document.getElementById('stabilityBar').style.width = this.stability + '%';
+                document.getElementById('stabilityBar').style.background = this.stability < 40 ? '#ff006e' : this.stability < 70 ? '#ff9500' : '#00d4ff';
+                document.getElementById('stabilityVal').textContent = this.stability < 40 ? '动荡' : this.stability < 70 ? '紧张' : '稳定';
+                
+                const popPressure = (this.population.current / this.population.max) * 100;
+                document.getElementById('popBar').style.width = Math.min(100, popPressure) + '%';
+                document.getElementById('popBar').style.background = popPressure > 120 ? '#ff006e' : popPressure > 90 ? '#ff9500' : '#00d4ff';
+            }
+        }
+
+        // 等待DOM加载完成后再初始化游戏
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new Game();
+        });
+    </script>
+</body>
+</html>
